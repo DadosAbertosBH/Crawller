@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="eternal" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/consolidated" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/eternal/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/consolidated" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/eternal/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/eternal/lib" />
+    </SOURCES>
+  </library>
+</component>

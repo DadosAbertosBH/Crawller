@@ -8,6 +8,8 @@ defmodule Crawler.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      {Crawler.BusCoordinates, name: :crawler_bus_coordinates},
+      {Cachex, name: :app_cache}
       # Starts a worker by calling: Crawler.Worker.start_link(arg)
       # {Crawler.Worker, arg}
     ]

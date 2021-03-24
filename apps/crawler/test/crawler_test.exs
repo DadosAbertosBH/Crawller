@@ -3,10 +3,11 @@ defmodule CrawlerTest do
 
   setup do
     bypass = Bypass.open()
-    {:ok, bypass: bypass}
+    crawler = start_supervised!(Crawler.BusCoordinates)
+    {:ok, bypass: bypass, crawler: crawler}
   end
 
-  test "greets the world", %{bypass: bypass} do
+  test "test parse CSV", %{bypass: bypass, crawler: crawler} do
     Bypass.expect(bypass, fn conn ->
       Plug.Conn.resp(conn, 200, """
       EV; HR; LT; LG; NV; VL; NL; DG; SV; DT
@@ -15,7 +16,7 @@ defmodule CrawlerTest do
       """)
     end)
 
-    stream = Crawler.busCoordinates("http://localhost:#{bypass.port}/")
+    stream = Crawler.BusCoordinates.watch("http://localhost:#{bypass.port}/")
     response = Enum.to_list(stream)
     assert response == [
       %{

@@ -29,11 +29,11 @@ defmodule HTTPStream do
 
   defp handle_async_resp(%HTTPoison.AsyncResponse{id: id}=resp,emit_end) do
     receive do
-      %HTTPoison.AsyncStatus{id: ^id, code: code}->
+      %HTTPoison.AsyncStatus{id: ^id, code: _code}->
         #IO.inspect(code, label: "STATUS: ")
         HTTPoison.stream_next(resp)
         {[], resp}
-      %HTTPoison.AsyncHeaders{id: ^id, headers: headers}->
+      %HTTPoison.AsyncHeaders{id: ^id, headers: _headers}->
         #IO.inspect(headers, label: "HEADERS: ")
         HTTPoison.stream_next(resp)
         {[], resp}
@@ -48,7 +48,7 @@ defmodule HTTPStream do
           {:halt, resp}
         end
     after
-      5_000 -> raise "receive timeout"
+      30_000 -> raise "receive timeout"
     end
   end
 

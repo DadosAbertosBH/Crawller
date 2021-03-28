@@ -3,11 +3,10 @@ defmodule CrawlerTest do
 
   setup do
     bypass = Bypass.open()
-    crawler = start_supervised!(Crawler.BusCoordinates)
-    {:ok, bypass: bypass, crawler: crawler}
+    {:ok, bypass: bypass}
   end
 
-  test "test parse CSV", %{bypass: bypass, crawler: crawler} do
+  test "test parse CSV", %{bypass: bypass} do
     Bypass.expect(bypass, fn conn ->
       Plug.Conn.resp(conn, 200, """
       EV; HR; LT; LG; NV; VL; NL; DG; SV; DT
@@ -16,8 +15,12 @@ defmodule CrawlerTest do
       """)
     end)
 
-    stream = Crawler.BusCoordinates.watch("http://localhost:#{bypass.port}/")
-    response = Enum.to_list(stream)
+    response = Crawler.BusCoordinates.watch(
+      real_time_url: "http://localhost:#{bypass.port}/",
+      pull_interval: 1,
+      bus_line_provider: CrawlerTest.MockBusLineProvider)
+    |> Stream.take(2)
+    |> Enum.to_list()
     assert response == [
       %{
         "DG" => "0",
@@ -29,7 +32,10 @@ defmodule CrawlerTest do
         "NL" => "357",
         "NV" => "40867",
         "SV" => "0",
-        "VL" => "0"
+        "VL" => "0",
+        "NumeroLinha" => "357",
+        "Linha" => "4403A-01",
+        "Nome" => "ZOOLOGICO VIA SERRANO"
       },
       %{
         "DG" => "14",
@@ -39,8 +45,27 @@ defmodule CrawlerTest do
         "LT" => "-19,927357",
         "NL" => "4023",
         "NV" => "40559",
-        "VL" => "26"
+        "VL" => "26",
+        "NumeroLinha" => "4023",
+        "Linha" => "6350",
+        "Nome" => "EST.VILAR./EST.BARREIRO-VIA ANEL"
       }
     ]
+  end
+
+  defmodule MockBusLineProvider do
+    @behaviour Crawler.BusLineProvider
+
+    @impl Crawler.BusLineProvider
+    def get("357") do {:ok, %{
+      "NumeroLinha" => "357",
+      "Linha" => "4403A-01",
+      "Nome" => "ZOOLOGICO VIA SERRANO"
+    }} end
+    def get("4023") do {:ok, %{
+      "NumeroLinha" => "4023",
+      "Linha" => "6350",
+      "Nome" => "EST.VILAR./EST.BARREIRO-VIA ANEL"
+    }} end
   end
 end

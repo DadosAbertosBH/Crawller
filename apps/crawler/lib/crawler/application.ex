@@ -9,11 +9,13 @@ defmodule Crawler.Application do
   @impl true
   def start(_type, _args) do
     source = {:service_account, get_google_auth("./apps/crawler/dadosabertosdebh.json"), []}
+    stream = Crawler.BusCoordinates.watch(real_time_url: "https://temporeal.pbh.gov.br/?param=C")
 
     children = [
       {Ingestor.BigQuery,
        name: :big_query_injector,
-       batch_size: 100,
+       stream: stream,
+       batch_size: 1000,
        project_id: "dadosabertosdebh",
        dataset_id: "dadosabertosdebh",
        table_id: "coordenadas_onibus"},

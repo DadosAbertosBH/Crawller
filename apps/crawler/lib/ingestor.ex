@@ -2,28 +2,43 @@ defmodule Ingestor.BigQuery do
   require Logger
   use GenServer
 
+  @type opts :: [
+          project_id: String.t(),
+          dataset_id: String.t(),
+          project_id: String.t(),
+          stream: Enumerable.t(),
+          batch_size: integer
+        ]
+
   @moduledoc """
-  Documentation for `BusCoordinates`.
+  Documentation for `Ingestor.BigQuery`.
+
   """
 
   @doc """
-  Starts the Crawler.
+  Starts the Ingestor.\n\n
   opts
-    * `project_id`
-    * `dataset_id`
+    `batch_size`: default `100`\n
+    `stream`: Stream to subscribe for rows\n
+    `project_id`: Google cloud project id\n
+    `dataset_id`: Big Query Dataset id\n
+    `table_id`: Big Query Table to insert rows
   """
+  @spec start_link(opts) :: {:ok, pid()}
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts)
   end
 
   @impl true
+  @spec init(opts) :: {:ok, pid()}
   def init(opts) do
     spawn_link(fn -> main(opts) end)
     {:ok, opts}
   end
 
+  @spec main(opts) :: :ok
   def main(opts) do
-    Crawler.BusCoordinates.watch(bus_line_provider: Crawler.CachexBusLineProvider)
+    opts[:stream]
     |> Stream.map(fn row -> GoogleApi.BigQuery.V2.Model.JsonObject.decode(row, []) end)
     |> Stream.map(fn json ->
       %GoogleApi.BigQuery.V2.Model.TableDataInsertAllRequestRows{json: json}

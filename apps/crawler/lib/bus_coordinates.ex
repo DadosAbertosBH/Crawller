@@ -15,14 +15,6 @@ defmodule Crawler.BusCoordinates do
   ]
 
   @typedoc """
-  BusCoordinates
-
-  Representa o conjunto de dados tempo [Real Ônibus - Coordenada atualizada](https://dados.pbh.gov.br/dataset/tempo_real_onibus_-_coordenada)
-  * [Dicionário de dados](https://ckan.pbh.gov.br/dataset/730aaa4b-d14c-4755-aed6-433cb0ad9430/resource/825337e5-8cd5-43d9-ac52-837d80346721/download/dicionario_arquivo.csv)
-  * [Arquivode conversão das linhas do sistema concencional](https://dados.pbh.gov.br/dataset/tempo_real_onibus_-_coordenada/resource/150bddd0-9a2c-4731-ade9-54aa56717fb6)
-
-  Dados disponíveis publicamente no [BigQuery](https://console.cloud.google.com/bigquery?project=dadosabertosdebh&p=dadosabertosdebh&page=table&d=dadosabertosdebh&t=coordenadas_onibus)\n
-
   `:codigo_linha` NL - Código interno da linha\n
   `:codigo_evento` EV - Código do evento, 105 representa o evento de coordenadas\n
   `:codigo_do_veiculo` NV - Código do veículo\n
@@ -52,19 +44,32 @@ defmodule Crawler.BusCoordinates do
   require Logger
 
   @moduledoc """
-  Documentation for `BusCoordinates`.
+    Representa o conjunto de dados tempo [Real Ônibus - Coordenada atualizada](https://dados.pbh.gov.br/dataset/tempo_real_onibus_-_coordenada)
+    * [Dicionário de dados](https://ckan.pbh.gov.br/dataset/730aaa4b-d14c-4755-aed6-433cb0ad9430/resource/825337e5-8cd5-43d9-ac52-837d80346721/download/dicionario_arquivo.csv)
+    * [Arquivode conversão das linhas do sistema concencional](https://dados.pbh.gov.br/dataset/tempo_real_onibus_-_coordenada/resource/150bddd0-9a2c-4731-ade9-54aa56717fb6)
+
+    Dados disponíveis publicamente no [BigQuery](https://console.cloud.google.com/bigquery?project=dadosabertosdebh&p=dadosabertosdebh&page=table&d=dadosabertosdebh&t=coordenadas_onibus)\n
+
   """
 
   @doc """
   Starts the Crawler.
   opts
-    * `real_time_url`- Url to fetch bus coordinates, default to "https://temporeal.pbh.gov.br/?param=C"
-    * `pull_interval`- Time in miliseconds that should be pulled"
+    * `real_time_url`- Url to fetch bus coordinates, default to `https://temporeal.pbh.gov.br/?param=C"`
+    * `pull_interval`- Time in miliseconds that should be pulled", default to `60s`
+    * `bus_line_provider`- Default to `Crawler.CachexBusLineProvider`
   """
+  @type opts :: [
+          bus_line_provider: Crawler.BusLineProvider | nil,
+          real_time_url: String.t() | nil,
+          pull_interval: integer | nil
+        ]
+  @spec watch(opts) :: Enumerable.t()
   def watch(opts) do
     default = [
       real_time_url: "https://temporeal.pbh.gov.br/?param=C",
-      pull_interval: 60 * 1000
+      pull_interval: 60 * 1000,
+      bus_line_provider: Crawler.CachexBusLineProvider
     ]
 
     options = Keyword.merge(default, opts)
@@ -117,8 +122,13 @@ defmodule Crawler.BusCoordinates do
   end
 
   defp parse_decimal(value) do
-    br_decimal = value |> String.replace(",", ".")
-    {decimal, _} = Float.parse(br_decimal)
-    decimal
+    case value |> String.replace(",", ".") |> Float.parse() do
+      {decimal, _} ->
+        decimal
+
+      :error ->
+        Logger.error("failed to parse #{value}")
+        0.0
+    end
   end
 end

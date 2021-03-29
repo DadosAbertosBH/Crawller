@@ -108,13 +108,22 @@ defmodule Crawler.BusCoordinates do
       codigo_linha: row["NL"],
       codigo_evento: row["EV"],
       codigo_do_veiculo: row["NV"],
-      timestamp: Timex.parse!(row["HR"], "%Y%m%d%H%M%S", :strftime),
+      timestamp: parse_date(row["HR"]),
       coordenadas: Geo.JSON.encode!(geoPoint) |> Poison.encode!(),
       velocidade_instantanea: parse_decimal(row["VL"]),
       distancia_pecorrida: parse_decimal(row["DT"]),
       direcao_do_veiculo: row["DG"],
       sentindo_da_viagem: row["SV"]
     }
+  end
+
+  defp parse_date(date_str) do
+    case Timex.parse(date_str, "%Y%m%d%H%M%S", :strftime) do
+      {:ok, date} -> date
+      {:error, reason} ->
+        Logger.error("Failed to parse date #{date_str}, reason: #{reason}")
+        NaiveDateTime.utc_now()
+    end
   end
 
   defp parse_decimal(nil) do
@@ -125,9 +134,8 @@ defmodule Crawler.BusCoordinates do
     case value |> String.replace(",", ".") |> Float.parse() do
       {decimal, _} ->
         decimal
-
       :error ->
-        Logger.error("failed to parse #{value}")
+        Logger.error("failed to parse decimal #{value}")
         0.0
     end
   end

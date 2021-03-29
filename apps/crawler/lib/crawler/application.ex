@@ -10,8 +10,8 @@ defmodule Crawler.Application do
   def start(_type, _args) do
     source = {:service_account, get_google_auth("./apps/crawler/dadosabertosdebh.json"), []}
     children = [
-      {Ingestor.BigQuery, name: :big_query_injector, project_id: "dadosabertosdebh", dataset_id: "dadosabertosdebh"},
-      {Goth, name: Crawler.Goth, source: source},
+      {Ingestor.BigQuery, name: :big_query_injector, project_id: "dadosabertosdebh", dataset_id: "dadosabertosdebh", table_id: "coordenadas_onibus"},
+      {Goth, name: :goth, source: source},
       {Cachex,
        name: :app_cache,
        expiration: expiration(default: :timer.minutes(360)),

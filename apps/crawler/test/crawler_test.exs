@@ -1,6 +1,6 @@
 defmodule CrawlerTest do
   use ExUnit.Case
-
+  use Assertions.Case
   setup do
     bypass = Bypass.open()
     {:ok, bypass: bypass}
@@ -20,37 +20,38 @@ defmodule CrawlerTest do
       pull_interval: 1,
       bus_line_provider: CrawlerTest.MockBusLineProvider)
     |> Stream.take(2)
+    #|> Stream.each(fn x -> IO.inspect(x) end)
     |> Enum.to_list()
-    assert response == [
-      %{
-        "DG" => "0",
-        "DT" => "708",
-        "EV" => "105",
-        "HR" => "20210323162012",
-        "LG" => "-44,014435",
-        "LT" => "-19,868567",
-        "NL" => "357",
-        "NV" => "40867",
-        "SV" => "0",
-        "VL" => "0",
-        "NumeroLinha" => "357",
-        "Linha" => "4403A-01",
-        "Nome" => "ZOOLOGICO VIA SERRANO"
-      },
-      %{
-        "DG" => "14",
-        "EV" => "105",
-        "HR" => "20210323162108",
-        "LG" => "-44,006144",
-        "LT" => "-19,927357",
-        "NL" => "4023",
-        "NV" => "40559",
-        "VL" => "26",
-        "NumeroLinha" => "4023",
-        "Linha" => "6350",
-        "Nome" => "EST.VILAR./EST.BARREIRO-VIA ANEL"
-      }
-    ]
+    assert_lists_equal(response,
+      [
+        %Crawler.BusCoordinates{
+          codigo_evento: "105",
+          timestamp: ~N[2021-03-23 16:20:12],
+          coordenadas: "{\"type\":\"Point\",\"coordinates\":[-19.868567,-44.014435]}",
+          codigo_do_veiculo: "40867",
+          velocidade_instantanea: 0.0,
+          codigo_linha: "357",
+          direcao_do_veiculo: "0",
+          distancia_pecorrida: 708.0,
+          nome_linha: "ZOOLOGICO VIA SERRANO",
+          numero_linha: "4403A-01",
+          sentindo_da_viagem: "0",
+        },
+        %Crawler.BusCoordinates{
+          codigo_do_veiculo: "40559",
+          codigo_evento: "105",
+          codigo_linha: "4023",
+          coordenadas: "{\"type\":\"Point\",\"coordinates\":[-19.927357,-44.006144]}",
+          direcao_do_veiculo: "14",
+          distancia_pecorrida: nil,
+          nome_linha: "EST.VILAR./EST.BARREIRO-VIA ANEL",
+          numero_linha: "6350",
+          sentindo_da_viagem: nil,
+          timestamp: ~N[2021-03-23 16:21:08],
+          velocidade_instantanea: 26.0
+        }
+      ]
+    )
   end
 
   defmodule MockBusLineProvider do

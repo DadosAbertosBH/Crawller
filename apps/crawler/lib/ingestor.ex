@@ -22,11 +22,12 @@ defmodule Ingestor.BigQuery do
   end
 
   def main(opts) do
-    _table_id = get_table_id(opts)
     Crawler.BusCoordinates.watch(bus_line_provider: Crawler.CachexBusLineProvider)
-    |> Stream.each(fn row ->
-      IO.inspect(row)
-      row
+    |> Stream.map(fn row -> GoogleApi.BigQuery.V2.Model.JsonObject.decode(row, []) end)
+    |> Stream.map(fn json -> %GoogleApi.BigQuery.V2.Model.TableDataInsertAllRequestRows{ json: json } end)
+    |> Stream.chunk_every(100)
+    |> Stream.each(fn rows ->
+      insert_rows(rows, opts)
      end)
     |> Stream.run()
   end
@@ -34,34 +35,24 @@ defmodule Ingestor.BigQuery do
   defp insert_rows(rows, opts) do
     response = GoogleApi.BigQuery.V2.Api.Tabledata.bigquery_tabledata_insert_all(
       connection(),
-      opts.project_id,
-      opts.dataset_id,
-      opts.table_id,
+      opts[:project_id],
+      opts[:dataset_id],
+      opts[:table_id],
       body: %GoogleApi.BigQuery.V2.Model.TableDataInsertAllRequest{
-        rows: %GoogleApi.BigQuery.V2.Model.TableDataInsertAllRequestRows{
-          json: GoogleApi.BigQuery.V2.Model.JsonObject.decode(rows, [])
-          }
-        }
+        rows: rows
+      }
     )
     case response do
     { :error, reason } ->
-      Logger.info("Failed insert rows with error #{reason}")
-    { :ok, _ } ->
+      Logger.error("Failed insert rows with error")
+      IO.inspect(reason)
+    { :ok, _response } ->
       Logger.info("Rows inserted with success")
     end
   end
 
   defp connection do
-    {:ok, %Goth.Token{token: token}} = Goth.Token.fetch(Crawler.Goth)
-    GoogleApi.BigQuery.V2.Connection.new(token)
-  end
-
-  defp get_table_id(state) do
-    conn = connection()
-
-    #{:ok, table_list} = GoogleApi.BigQuery.V2.Api.Tables.bigquery_tables_list(conn, state.project_id, state.dataset_id)
-    #table_list.tables()
-    #|> Enum.filter(fn table -> table.friendlyName == state.table_name end)
-    #|> Enum.map(fn table -> table.id end)
+    {:ok, token} = Goth.fetch(:goth)
+    GoogleApi.BigQuery.V2.Connection.new(token.token)
   end
 end

@@ -36,18 +36,18 @@ defmodule Crawler.BusCoordinates do
   `:nome_linha` - Nome da linha do ônibus\n
   """
   @type t :: %__MODULE__{
-    codigo_linha: String.t,
-    codigo_evento: String.t,
-    codigo_do_veiculo: String.t,
-    timestamp: float(),
-    coordenadas: struct(),
-    velocidade_instantanea: float(),
-    distancia_pecorrida: float(),
-    direcao_do_veiculo: String.t,
-    sentindo_da_viagem: String.t,
-    numero_linha: String.t,
-    nome_linha: String.t,
-  }
+          codigo_linha: String.t(),
+          codigo_evento: String.t(),
+          codigo_do_veiculo: String.t(),
+          timestamp: float(),
+          coordenadas: struct(),
+          velocidade_instantanea: float(),
+          distancia_pecorrida: float(),
+          direcao_do_veiculo: String.t(),
+          sentindo_da_viagem: String.t(),
+          numero_linha: String.t(),
+          nome_linha: String.t()
+        }
 
   require Logger
 
@@ -66,6 +66,7 @@ defmodule Crawler.BusCoordinates do
       real_time_url: "https://temporeal.pbh.gov.br/?param=C",
       pull_interval: 60 * 1000
     ]
+
     options = Keyword.merge(default, opts)
     real_time_url = options[:real_time_url]
     pull_interval = options[:pull_interval]
@@ -80,19 +81,23 @@ defmodule Crawler.BusCoordinates do
 
   defp merge_with_bus_line(row, bus_line_provider) do
     bus_coordinates = decode_bus_coordinates(row)
+
     case bus_line_provider.get(bus_coordinates.codigo_linha) do
       {:error, reason} ->
         Logger.info("Failed to find bus line for #{row["NL"]}, reason: #{reason}")
         bus_coordinates
+
       {:ok, nil} ->
         Logger.info("Found nil cache for line #{row["NL"]}")
         bus_coordinates
-      {:ok, bus_line} ->  %{bus_coordinates | numero_linha: bus_line["Linha"], nome_linha: bus_line["Nome"]}
+
+      {:ok, bus_line} ->
+        %{bus_coordinates | numero_linha: bus_line["Linha"], nome_linha: bus_line["Nome"]}
     end
   end
 
   defp decode_bus_coordinates(row) do
-    geoPoint = %Geo.Point{ coordinates: {parse_decimal(row["LT"]), parse_decimal(row["LG"])}}
+    geoPoint = %Geo.Point{coordinates: {parse_decimal(row["LT"]), parse_decimal(row["LG"])}}
 
     %Crawler.BusCoordinates{
       codigo_linha: row["NL"],
@@ -103,15 +108,17 @@ defmodule Crawler.BusCoordinates do
       velocidade_instantanea: parse_decimal(row["VL"]),
       distancia_pecorrida: parse_decimal(row["DT"]),
       direcao_do_veiculo: row["DG"],
-      sentindo_da_viagem: row["SV"],
+      sentindo_da_viagem: row["SV"]
     }
   end
 
-  defp parse_decimal(nil) do nil end
-  defp parse_decimal(value) do
-    br_decimal = value |> String.replace(",",".")
-    {decimal, _} =  Float.parse(br_decimal)
-    decimal
+  defp parse_decimal(nil) do
+    nil
   end
 
+  defp parse_decimal(value) do
+    br_decimal = value |> String.replace(",", ".")
+    {decimal, _} = Float.parse(br_decimal)
+    decimal
+  end
 end

@@ -1,6 +1,7 @@
 defmodule CrawlerTest do
   use ExUnit.Case
   use Assertions.Case
+
   setup do
     bypass = Bypass.open()
     {:ok, bypass: bypass}
@@ -15,14 +16,18 @@ defmodule CrawlerTest do
       """)
     end)
 
-    response = Crawler.BusCoordinates.watch(
-      real_time_url: "http://localhost:#{bypass.port}/",
-      pull_interval: 1,
-      bus_line_provider: CrawlerTest.MockBusLineProvider)
-    |> Stream.take(2)
-    #|> Stream.each(fn x -> IO.inspect(x) end)
-    |> Enum.to_list()
-    assert_lists_equal(response,
+    response =
+      Crawler.BusCoordinates.watch(
+        real_time_url: "http://localhost:#{bypass.port}/",
+        pull_interval: 1,
+        bus_line_provider: CrawlerTest.MockBusLineProvider
+      )
+      |> Stream.take(2)
+      # |> Stream.each(fn x -> IO.inspect(x) end)
+      |> Enum.to_list()
+
+    assert_lists_equal(
+      response,
       [
         %Crawler.BusCoordinates{
           codigo_evento: "105",
@@ -35,7 +40,7 @@ defmodule CrawlerTest do
           distancia_pecorrida: 708.0,
           nome_linha: "ZOOLOGICO VIA SERRANO",
           numero_linha: "4403A-01",
-          sentindo_da_viagem: "0",
+          sentindo_da_viagem: "0"
         },
         %Crawler.BusCoordinates{
           codigo_do_veiculo: "40559",
@@ -58,15 +63,22 @@ defmodule CrawlerTest do
     @behaviour Crawler.BusLineProvider
 
     @impl Crawler.BusLineProvider
-    def get("357") do {:ok, %{
-      "NumeroLinha" => "357",
-      "Linha" => "4403A-01",
-      "Nome" => "ZOOLOGICO VIA SERRANO"
-    }} end
-    def get("4023") do {:ok, %{
-      "NumeroLinha" => "4023",
-      "Linha" => "6350",
-      "Nome" => "EST.VILAR./EST.BARREIRO-VIA ANEL"
-    }} end
+    def get("357") do
+      {:ok,
+       %{
+         "NumeroLinha" => "357",
+         "Linha" => "4403A-01",
+         "Nome" => "ZOOLOGICO VIA SERRANO"
+       }}
+    end
+
+    def get("4023") do
+      {:ok,
+       %{
+         "NumeroLinha" => "4023",
+         "Linha" => "6350",
+         "Nome" => "EST.VILAR./EST.BARREIRO-VIA ANEL"
+       }}
+    end
   end
 end

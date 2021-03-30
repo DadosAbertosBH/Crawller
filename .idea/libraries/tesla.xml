@@ -1,13 +1,14 @@
 <component name="libraryTable">
-  <library name="dialyxir" type="mix">
+  <library name="tesla" type="mix">
     <CLASSES>
-      <root url="file://$PROJECT_DIR$/_build/dev/lib/dialyxir/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/tesla/ebin" />
       <root url="file://$PROJECT_DIR$/_build/dev/consolidated" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/tesla/ebin" />
       <root url="file://$PROJECT_DIR$/_build/test/consolidated" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="file://$PROJECT_DIR$/deps/dialyxir/lib" />
+      <root url="file://$PROJECT_DIR$/deps/tesla/lib" />
     </SOURCES>
   </library>
 </component>

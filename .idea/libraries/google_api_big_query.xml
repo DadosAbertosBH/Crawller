@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="google_api_big_query" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/google_api_big_query/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/consolidated" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/google_api_big_query/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/consolidated" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/google_api_big_query/lib" />
+    </SOURCES>
+  </library>
+</component>

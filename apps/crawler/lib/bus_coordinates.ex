@@ -1,5 +1,13 @@
 defmodule Crawler.BusCoordinates do
-  @derive [Poison.Encoder]
+  @moduledoc """
+  Representa o conjunto de dados tempo [Real Ônibus - Coordenada atualizada](https://dados.pbh.gov.br/dataset/tempo_real_onibus_-_coordenada)
+  * [Dicionário de dados](https://ckan.pbh.gov.br/dataset/730aaa4b-d14c-4755-aed6-433cb0ad9430/resource/825337e5-8cd5-43d9-ac52-837d80346721/download/dicionario_arquivo.csv)
+  * [Arquivode conversão das linhas do sistema concencional](https://dados.pbh.gov.br/dataset/tempo_real_onibus_-_coordenada/resource/150bddd0-9a2c-4731-ade9-54aa56717fb6)
+
+  Dados disponíveis publicamente no [BigQuery](https://console.cloud.google.com/bigquery?project=dadosabertosdebh&p=dadosabertosdebh&page=table&d=dadosabertosdebh&t=coordenadas_onibus)\n
+
+  """
+
   defstruct [
     :codigo_linha,
     :codigo_evento,
@@ -43,15 +51,6 @@ defmodule Crawler.BusCoordinates do
 
   require Logger
 
-  @moduledoc """
-    Representa o conjunto de dados tempo [Real Ônibus - Coordenada atualizada](https://dados.pbh.gov.br/dataset/tempo_real_onibus_-_coordenada)
-    * [Dicionário de dados](https://ckan.pbh.gov.br/dataset/730aaa4b-d14c-4755-aed6-433cb0ad9430/resource/825337e5-8cd5-43d9-ac52-837d80346721/download/dicionario_arquivo.csv)
-    * [Arquivode conversão das linhas do sistema concencional](https://dados.pbh.gov.br/dataset/tempo_real_onibus_-_coordenada/resource/150bddd0-9a2c-4731-ade9-54aa56717fb6)
-
-    Dados disponíveis publicamente no [BigQuery](https://console.cloud.google.com/bigquery?project=dadosabertosdebh&p=dadosabertosdebh&page=table&d=dadosabertosdebh&t=coordenadas_onibus)\n
-
-  """
-
   @doc """
   Starts the Crawler.
   opts
@@ -80,6 +79,7 @@ defmodule Crawler.BusCoordinates do
     Stream.interval(pull_interval)
     |> Stream.flat_map(fn _ -> HTTPStream.get(real_time_url) end)
     |> HTTPStream.lines()
+    # |> Stream.each(&IO.puts/1)
     |> CSV.decode!(separator: ?;, headers: true, strip_fields: true, validate_row_length: false)
     |> Stream.map(fn row -> merge_with_bus_line(row, bus_line_provider) end)
   end
@@ -119,7 +119,9 @@ defmodule Crawler.BusCoordinates do
 
   defp parse_date(date_str) do
     case Timex.parse(date_str, "%Y%m%d%H%M%S", :strftime) do
-      {:ok, date} -> date
+      {:ok, date} ->
+        date
+
       {:error, reason} ->
         Logger.error("Failed to parse date #{date_str}, reason: #{reason}")
         NaiveDateTime.utc_now()
@@ -134,6 +136,7 @@ defmodule Crawler.BusCoordinates do
     case value |> String.replace(",", ".") |> Float.parse() do
       {decimal, _} ->
         decimal
+
       :error ->
         Logger.error("failed to parse decimal #{value}")
         0.0

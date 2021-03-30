@@ -1,28 +1,37 @@
 defmodule HTTPStream do
-  def get(url, emit_end \\ false) do
-    Stream.resource(
-      fn -> start_fun(url) end,
+  @moduledoc """
+  Handle Http connection as stream emmitng chunks
+  """
 
-      # next_fun (multi caluses)
-      fn
-        %HTTPoison.AsyncResponse{} = resp ->
-          handle_async_resp(resp, emit_end)
-
-        # last accumulator when emitting :end
-        {:end, resp} ->
-          {:halt, resp}
-      end,
-      fn %HTTPoison.AsyncResponse{id: id} ->
-        :hackney.stop_async(id)
-      end
-    )
+  @doc """
+  Starts the stream\n
+  param `url`- Url to stream response
+  """
+  @spec get(String.t()) :: Enumerable.t()
+  def get(url) do
+    Stream.resource(start_fun(url), &next_fun/1, &end_fun/1)
   end
+
+  @doc """
+  Emmit line by line
+  """
+  @spec lines(Enumerable.t()) :: Enumerable.t()
+  def lines(enum),
+    do:
+      enum
+      # case the chunk already contains more than one line
+      |> Stream.flat_map(&split_if_apply/1)
+      |> Stream.map(fn chunk -> [chunk] end)
+      |> Stream.transform("", &accumulate_or_emmit/2)
 
   defp start_fun(url) do
-    HTTPoison.get!(url, %{}, stream_to: self(), async: :once)
+    fn -> HTTPoison.get!(url, %{}, stream_to: self(), async: :once) end
   end
 
-  defp handle_async_resp(%HTTPoison.AsyncResponse{id: id} = resp, emit_end) do
+  defp next_fun(%HTTPoison.AsyncResponse{} = resp), do: handle_async_resp(resp)
+  defp end_fun(%HTTPoison.AsyncResponse{id: id}), do: :hackney.stop_async(id)
+
+  defp handle_async_resp(%HTTPoison.AsyncResponse{id: id} = resp) do
     receive do
       %HTTPoison.AsyncStatus{id: ^id, code: _code} ->
         # IO.inspect(code, label: "STATUS: ")
@@ -40,54 +49,16 @@ defmodule HTTPStream do
         {[chunk], resp}
 
       %HTTPoison.AsyncEnd{id: ^id} ->
-        if emit_end do
-          {[:end], {:end, resp}}
-        else
-          {:halt, resp}
-        end
+        {[:end], resp}
     after
       30_000 -> raise "receive timeout"
     end
   end
 
-  def lines(enum), do: lines(enum, :string_split)
+  def accumulate_or_emmit([:end], acc), do: {:halt, acc}
+  def accumulate_or_emmit("\n", acc), do: {:halt, acc}
+  def accumulate_or_emmit([i], acc), do: {[i], acc <> i}
 
-  def lines(enum, :next_lines) do
-    enum
-    |> Stream.transform("", &next_lines/2)
-  end
-
-  def lines(enum, :string_split) do
-    enum
-    |> Stream.transform("", fn
-      :end, acc ->
-        {[acc], ""}
-
-      chunk, acc ->
-        [last_line | lines] =
-          String.split(acc <> chunk, "\n")
-          |> Enum.reverse()
-
-        {Enum.reverse(lines), last_line}
-    end)
-  end
-
-  defp next_lines(:end, prev), do: {[prev], ""}
-
-  defp next_lines(chunk, current_line) do
-    # :erlang.garbage_collect()
-    next_lines(chunk, current_line, [])
-  end
-
-  defp next_lines(<<"\n"::utf8, rest::binary>>, current_line, lines) do
-    next_lines(rest, "", [<<current_line::binary, "\n"::utf8>> | lines])
-  end
-
-  defp next_lines(<<c::utf8, rest::binary>>, current_line, lines) do
-    next_lines(rest, <<current_line::binary, c::utf8>>, lines)
-  end
-
-  defp next_lines(<<>>, current_line, lines) do
-    {Enum.reverse(lines), current_line}
-  end
+  def split_if_apply(:end), do: [:end]
+  def split_if_apply(str), do: Regex.split(~r/(?<=\n)/, str, trim: true)
 end

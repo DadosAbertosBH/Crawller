@@ -1,7 +1,13 @@
 <component name="libraryTable">
   <library name="ex_doc" type="mix">
-    <CLASSES />
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/ex_doc/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/consolidated" />
+      <root url="file://$PROJECT_DIR$/_build/test/consolidated" />
+    </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/ex_doc/lib" />
+    </SOURCES>
   </library>
 </component>

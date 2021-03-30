@@ -1,13 +1,14 @@
 <component name="libraryTable">
-  <library name="dialyxir" type="mix">
+  <library name="google_gax" type="mix">
     <CLASSES>
-      <root url="file://$PROJECT_DIR$/_build/dev/lib/dialyxir/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/google_gax/ebin" />
       <root url="file://$PROJECT_DIR$/_build/dev/consolidated" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/google_gax/ebin" />
       <root url="file://$PROJECT_DIR$/_build/test/consolidated" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
-      <root url="file://$PROJECT_DIR$/deps/dialyxir/lib" />
+      <root url="file://$PROJECT_DIR$/deps/google_gax/lib" />
     </SOURCES>
   </library>
 </component>

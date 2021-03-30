@@ -12,12 +12,12 @@ defmodule Crawler.CachexBusLineProvider do
   Nome: Nome da linha do ônibus ex: ZOOLOGICO VIA SERRANO\n
   """
   @spec get(String.t()) ::
-              {:ok,
-               %{
-                 NumeroLinha: String.t(),
-                 Linha: String.t(),
-                 Nome: String.t()
-               }}
-              | {:error, String.t()}
+          {:ok,
+           %{
+             NumeroLinha: String.t(),
+             Linha: String.t(),
+             Nome: String.t()
+           }}
+          | {:error, String.t()}
   def get(bus_line_number), do: Cachex.get(:app_cache, bus_line_number)
 end

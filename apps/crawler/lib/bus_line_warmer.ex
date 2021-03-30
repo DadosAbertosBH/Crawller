@@ -21,7 +21,7 @@ defmodule Crawler.BusLineWarmer do
         |> HTTPStream.get()
         |> HTTPStream.lines()
         |> Stream.map(fn line -> :unicode.characters_to_binary(line, :latin1) end)
-        |> CSV.decode!(separator: ?;, headers: true)
+        |> CSV.decode!(separator: ?;, headers: true, validate_row_length: false)
         |> Enum.map(fn line -> {line["NumeroLinha"], line} end)
         |> Enum.to_list()
 

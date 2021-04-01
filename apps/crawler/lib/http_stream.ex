@@ -34,18 +34,15 @@ defmodule HTTPStream do
   defp handle_async_resp(%HTTPoison.AsyncResponse{id: id} = resp) do
     receive do
       %HTTPoison.AsyncStatus{id: ^id, code: _code} ->
-        # IO.inspect(code, label: "STATUS: ")
         HTTPoison.stream_next(resp)
         {[], resp}
 
       %HTTPoison.AsyncHeaders{id: ^id, headers: _headers} ->
-        # IO.inspect(headers, label: "HEADERS: ")
         HTTPoison.stream_next(resp)
         {[], resp}
 
       %HTTPoison.AsyncChunk{id: ^id, chunk: chunk} ->
         HTTPoison.stream_next(resp)
-        # :erlang.garbage_collect()
         {[chunk], resp}
 
       %HTTPoison.AsyncEnd{id: ^id} ->

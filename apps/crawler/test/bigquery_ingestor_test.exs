@@ -5,9 +5,15 @@ defmodule BigQueryIngestorTest do
   test "when decode with success returns {:ok, [{id, %{NumeroLinha, Linha, Nome}}]" do
     bypass = Bypass.open()
 
+    Application.put_env(:google_api_big_query, :base_url, "http://localhost:#{bypass.port}/")
+
     Bypass.expect(bypass, fn conn ->
       IO.inspect(conn)
-      Plug.Conn.resp(conn, 200, "{\"kind\":string,\"insertErrors\":[]}")
+
+      assert conn.request_path ==
+               "/bigquery/v2/projects/dadosabertosdebh/datasets/dadosabertosdebh/tables/coordenadas_onibus/insertAll"
+
+      Plug.Conn.resp(conn, 200, "{}")
     end)
 
     stream = [

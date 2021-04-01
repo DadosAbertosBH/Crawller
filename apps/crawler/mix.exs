@@ -2,7 +2,7 @@ defmodule Crawler.MixProject do
   use Mix.Project
 
   def project do
-    version = System.get_env("GITHUB_RUN_ID", "1")
+    version = System.get_env("GITHUB_RUN_NUMBER", "1")
 
     [
       app: :crawler,

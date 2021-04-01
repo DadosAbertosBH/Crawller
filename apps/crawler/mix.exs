@@ -3,6 +3,7 @@ defmodule Crawler.MixProject do
 
   def project do
     version = System.get_env("GITHUB_RUN_ID", "1")
+
     [
       app: :crawler,
       version: "0.0.0-rc#{version}",

@@ -16,3 +16,5 @@ import Config
 #       format: "$date $time [$level] $metadata$message\n",
 #       metadata: [:user_id]
 #
+config :crawler,
+  google_application_credentials: System.get_env("GOOGLE_APPLICATION_CREDENTIALS", "./apps/crawler/dadosabertosdebh.json")

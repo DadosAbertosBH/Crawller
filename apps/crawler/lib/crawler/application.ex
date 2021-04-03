@@ -8,7 +8,8 @@ defmodule Crawler.Application do
 
   @impl true
   def start(_type, _args) do
-    source = {:service_account, get_google_auth("./apps/crawler/dadosabertosdebh.json"), []}
+    credentials_json = Application.get_env(:crawler, :google_application_credentials, "./apps/crawler/dadosabertosdebh.json")
+    source = {:service_account, get_google_auth(credentials_json), []}
     stream = Crawler.BusCoordinates.watch(real_time_url: "https://temporeal.pbh.gov.br/?param=C")
 
     children = [

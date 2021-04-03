@@ -10,7 +10,7 @@ defmodule Dadosabertosbh.MixProject do
       releases: [
         crawler: [
           applications: [crawler: :permanent]
-        ],
+        ]
       ]
     ]
   end

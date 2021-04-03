@@ -17,4 +17,5 @@ import Config
 #       metadata: [:user_id]
 #
 config :crawler,
-  google_application_credentials: System.get_env("GOOGLE_APPLICATION_CREDENTIALS", "./apps/crawler/dadosabertosdebh.json")
+  google_application_credentials:
+    System.get_env("GOOGLE_APPLICATION_CREDENTIALS", "./apps/crawler/dadosabertosdebh.json")

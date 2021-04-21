@@ -33,7 +33,7 @@ jobs:
     - name: Check Format    
       run: mix format --check-formatted
     - name: Run tests
-      run: mix test --cover
+      run: mix coveralls.github
     - name: Set to hex api key
       run:  mix hex.config api_key ${{ secrets.HEX_API_KEY }}
     - name: Publish to Hex.pm

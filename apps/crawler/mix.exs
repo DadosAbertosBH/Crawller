@@ -15,6 +15,13 @@ defmodule Crawler.MixProject do
       description: description(),
       start_permanent: Mix.env() == :prod,
       package: package(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
       source_url: "https://github.com/DadosAbertosBH/Crawller",
       deps: deps()
     ]
@@ -55,6 +62,7 @@ defmodule Crawler.MixProject do
       {:geo, "~> 3.0"},
       {:bypass, "~> 2.1", only: :test},
       {:assertions, "~> 0.18.1", only: :test},
+      {:excoveralls, "~> 0.10", only: :test},
       {:ex_doc, "~> 0.24.1", only: :dev, runtime: false},
       {:dialyxir, "~> 0.4", only: :dev},
       {:benchee, "~> 1.0", only: :dev}

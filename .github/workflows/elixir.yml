@@ -38,7 +38,7 @@ jobs:
       run: mix coveralls.github
     - name: Set to hex api key
       run:  mix hex.config api_key ${{ secrets.HEX_API_KEY }}
-    - name: Publish to Hex.pm
+    - name: Publish to Hex.pm 
       working-directory: apps/crawler
       run:  mix hex.publish --yes
   push_to_registry:

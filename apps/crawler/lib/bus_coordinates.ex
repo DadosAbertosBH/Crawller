@@ -102,14 +102,14 @@ defmodule Crawler.BusCoordinates do
   end
 
   defp decode_bus_coordinates(row) do
-    geoPoint = %Geo.Point{coordinates: {parse_decimal(row["LT"]), parse_decimal(row["LG"])}}
+    geo_point = %Geo.Point{coordinates: {parse_decimal(row["LT"]), parse_decimal(row["LG"])}}
 
     %Crawler.BusCoordinates{
       codigo_linha: row["NL"],
       codigo_evento: row["EV"],
       codigo_do_veiculo: row["NV"],
       timestamp: parse_date(row["HR"]),
-      coordenadas: Geo.JSON.encode!(geoPoint) |> Poison.encode!(),
+      coordenadas: Geo.JSON.encode!(geo_point) |> Poison.encode!(),
       velocidade_instantanea: parse_decimal(row["VL"]),
       distancia_pecorrida: parse_decimal(row["DT"]),
       direcao_do_veiculo: row["DG"],

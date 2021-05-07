@@ -1,4 +1,9 @@
 defmodule Crawler.BusLineProvider do
+
+  @moduledoc """
+  Interface to get bus line
+  """
+
   @doc """
   Dado a NumeroLinha (identificador da BH Trans),
   retorna um dicionário com as chaves NumeroLinha, LinhaNome \n\n

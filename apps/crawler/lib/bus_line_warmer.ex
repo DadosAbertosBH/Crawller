@@ -14,6 +14,7 @@ defmodule Crawler.BusLineWarmer do
   @doc """
   Executes this cache warmer with a connection.
   """
+
   def execute(url) do
     try do
       list =

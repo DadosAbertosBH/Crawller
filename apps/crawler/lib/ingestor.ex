@@ -63,10 +63,8 @@ defmodule Ingestor.BigQuery do
       )
 
     case response do
-      {:error, reason} ->
+      {:error, _reason} ->
         Logger.error("Failed insert rows with error")
-        IO.inspect(reason)
-
       {:ok, _response} ->
         Logger.info("Rows inserted with success")
     end

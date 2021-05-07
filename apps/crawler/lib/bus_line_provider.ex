@@ -1,5 +1,4 @@
 defmodule Crawler.BusLineProvider do
-
   @moduledoc """
   Interface to get bus line
   """

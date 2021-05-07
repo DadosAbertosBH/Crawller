@@ -1,5 +1,4 @@
 defmodule Crawler.CachexBusLineProvider do
-
   @moduledoc """
   Cachex implementation to get bus line
   """

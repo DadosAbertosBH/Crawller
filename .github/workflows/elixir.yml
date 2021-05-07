@@ -7,6 +7,34 @@ on:
     branches: [ main ]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test & Checks
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-elixir@885971a72ed1f9240973bd92ab57af8c1aa68f24
+        with:
+          elixir-version: '1.11.4' # Define the elixir version [required]
+          otp-version: '22.3' # Define the OTP version [required]
+      - run: mix deps.get
+      - run: mix format --check-formatted        
+      - name: Retrieve PLT Cache
+        uses: actions/cache@v1
+        id: plt-cache
+        with:
+          path: priv/plts
+          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-plts-${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}
+
+      - name: Create PLTs
+        if: steps.plt-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p priv/plts
+          mix dialyzer --plt        
+      - run: mix dialyzer --no-check --halt-exit-status       
+      - run: mix coveralls.github    
+        env:
+          MIX_ENV: test
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   build:
     name: Build and test
     runs-on: ubuntu-latest
